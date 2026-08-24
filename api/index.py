@@ -1,18 +1,21 @@
 import os
 import json
-from flask import Flask, request, render_template, jsonify, make_response
+from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException, Response
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Vercel requires specific absolute paths for templates and static files
+# Set paths for templates and static assets
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-template_dir = os.path.join(base_dir, 'templates')
-static_dir = os.path.join(base_dir, 'static')
+template_dir = os.path.join(base_dir, "templates")
+static_dir = os.path.join(base_dir, "static")
 
-app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
+app = FastAPI(title="Resume Portfolio Generator")
+templates = Jinja2Templates(directory=template_dir)
 
 THEME_TEMPLATES = {
     "dark": "portfolio_dark.html",
@@ -87,83 +90,131 @@ Resume Text:
 {resume_text}
 """
 
-
-@app.route("/", methods=["GET"])
-def home():
+# Home routes (supporting both standard and Vercel rewrite paths)
+@app.get("/")
+@app.get("/api/index")
+async def home(request: Request):
     """Serves the generator dashboard."""
-    return render_template("index.html")
+    return templates.TemplateResponse(
+        request=request, 
+        name="index.html"
+    )
 
-
-@app.route("/generate", methods=["POST"])
-def generate():
-    """Handles resume upload, calls Gemini, and redirects to the rendered portfolio page."""
-    if "resume" not in request.files:
-        return render_template("index.html", error="No file uploaded. Please select your resume."), 400
-
-    file = request.files["resume"]
-    if file.filename == "":
-        return render_template("index.html", error="No file selected."), 400
-
-    # Validate file extension
-    if not file.filename.lower().endswith(".txt"):
-        return render_template("index.html", error="Only .txt files are supported."), 400
-
-    field = request.form.get("field", "Professional").strip()
-    theme = request.form.get("theme", "dark").strip().lower()
-    tone = request.form.get("tone", "professional").strip().lower()
+# Generate routes
+@app.post("/generate")
+@app.post("/api/index/generate")
+@app.post("/api/generate")
+async def generate(
+    request: Request,
+    resume: UploadFile = File(...),
+    field: str = Form("Professional"),
+    theme: str = Form("dark"),
+    tone: str = Form("professional"),
+):
+    """Handles resume upload, calls Gemini, and renders the chosen portfolio template."""
+    if not resume.filename.lower().endswith(".txt"):
+        return templates.TemplateResponse(
+            request=request,
+            name="index.html",
+            context={"error": "Only .txt files are supported."},
+            status_code=400,
+        )
 
     try:
-        resume_text = file.read().decode("utf-8").strip()
+        content = await resume.read()
+        resume_text = content.decode("utf-8").strip()
     except UnicodeDecodeError:
-        return render_template("index.html", error="Could not read file. Make sure it's a UTF-8 encoded .txt file."), 400
+        return templates.TemplateResponse(
+            request=request,
+            name="index.html",
+            context={"error": "Could not read file. Make sure it is UTF-8 encoded."},
+            status_code=400,
+        )
 
     if len(resume_text) < 80:
-        return render_template("index.html", error="Resume is too short. Please provide more detail."), 400
+        return templates.TemplateResponse(
+            request=request,
+            name="index.html",
+            context={"error": "Resume is too short. Please provide more detail."},
+            status_code=400,
+        )
 
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
-        return render_template("index.html", error="Server configuration error: GEMINI_API_KEY is not set."), 500
+        return templates.TemplateResponse(
+            request=request,
+            name="index.html",
+            context={"error": "Server configuration error: GEMINI_API_KEY is not set."},
+            status_code=500,
+        )
 
     client = genai.Client(api_key=api_key)
-    prompt = build_prompt(resume_text, field, tone)
+    prompt = build_prompt(resume_text, field.strip(), tone.strip().lower())
 
     try:
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt,
-            config=types.GenerateContentConfig(response_mime_type="application/json")
+            config=types.GenerateContentConfig(response_mime_type="application/json"),
         )
         portfolio_data = json.loads(response.text)
     except json.JSONDecodeError as e:
-        return render_template("index.html", error=f"AI returned malformed data. Please try again. ({e})"), 500
+        return templates.TemplateResponse(
+            request=request,
+            name="index.html",
+            context={"error": f"AI returned malformed data. Please try again. ({e})"},
+            status_code=500,
+        )
     except Exception as e:
-        return render_template("index.html", error=f"AI generation failed: {e}"), 500
+        return templates.TemplateResponse(
+            request=request,
+            name="index.html",
+            context={"error": f"AI generation failed: {e}"},
+            status_code=500,
+        )
 
-    # Select the correct template based on theme
-    template_name = THEME_TEMPLATES.get(theme, "portfolio_dark.html")
+    selected_theme = theme.strip().lower()
+    template_name = THEME_TEMPLATES.get(selected_theme, "portfolio_dark.html")
 
-    return render_template(template_name, portfolio=portfolio_data, theme=theme, tone=tone)
+    return templates.TemplateResponse(
+        request=request,
+        name=template_name,
+        context={
+            "portfolio": portfolio_data,
+            "theme": selected_theme,
+            "tone": tone.strip().lower(),
+        },
+    )
 
-
-@app.route("/download", methods=["POST"])
-def download():
+# Download routes
+@app.post("/download")
+@app.post("/api/index/download")
+@app.post("/api/download")
+async def download(
+    request: Request,
+    portfolio_json: str = Form("{}"),
+    theme: str = Form("dark"),
+    tone: str = Form("professional"),
+):
     """Returns a self-contained HTML file for download."""
     try:
-        portfolio_data = json.loads(request.form.get("portfolio_json", "{}"))
-        theme = request.form.get("theme", "dark").lower()
-        tone = request.form.get("tone", "professional").lower()
+        portfolio_data = json.loads(portfolio_json)
+        selected_theme = theme.strip().lower()
+        selected_tone = tone.strip().lower()
     except json.JSONDecodeError:
-        return "Invalid portfolio data", 400
+        raise HTTPException(status_code=400, detail="Invalid portfolio data")
 
-    template_name = THEME_TEMPLATES.get(theme, "portfolio_dark.html")
-    rendered_html = render_template(template_name, portfolio=portfolio_data, theme=theme, tone=tone, standalone=True)
+    template_name = THEME_TEMPLATES.get(selected_theme, "portfolio_dark.html")
+    template = templates.get_template(template_name)
+    rendered_html = template.render(
+        portfolio=portfolio_data,
+        theme=selected_theme,
+        tone=selected_tone,
+        standalone=True,
+    )
 
-    response = make_response(rendered_html)
     name = portfolio_data.get("name", "portfolio").replace(" ", "_").lower()
-    response.headers["Content-Disposition"] = f'attachment; filename="{name}_portfolio.html"'
-    response.headers["Content-Type"] = "text/html; charset=utf-8"
-    return response
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    headers = {
+        "Content-Disposition": f'attachment; filename="{name}_portfolio.html"',
+    }
+    return Response(content=rendered_html, media_type="text/html; charset=utf-8", headers=headers)
