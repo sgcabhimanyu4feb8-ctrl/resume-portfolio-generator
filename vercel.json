@@ -1,7 +1,8 @@
 {
   "functions": {
     "api/index.py": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "includeFiles": "templates/**"
     }
   },
   "rewrites": [
