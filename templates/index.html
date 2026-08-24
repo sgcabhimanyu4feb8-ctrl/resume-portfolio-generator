@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PortfolioAI — Turn Your Resume Into a Stunning Portfolio</title>
+    <meta name="description" content="Upload your resume and let AI generate a beautiful, professional portfolio website tailored to your target industry in seconds.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- Animated background orbs -->
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+
+    <div class="page-wrapper">
+
+        <!-- ===== NAVBAR ===== -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <span class="brand-icon">✦</span>
+                <span class="brand-name">PortfolioAI</span>
+            </div>
+            <div class="nav-badge">Powered by Gemini 2.5</div>
+        </nav>
+
+        <!-- ===== HERO ===== -->
+        <section class="hero-section">
+            <div class="hero-pill">✨ AI-Powered · Instant · Professional</div>
+            <h1 class="hero-title">
+                Transform Your Resume Into a<br>
+                <span class="gradient-text">Stunning Portfolio</span>
+            </h1>
+            <p class="hero-subtitle">
+                Upload your <code>.txt</code> resume, pick your industry and style — our AI does the rest in seconds.
+            </p>
+        </section>
+
+        <!-- ===== ERROR ALERT ===== -->
+        {% if error %}
+        <div class="alert-error" id="alertError">
+            <span class="alert-icon">⚠️</span>
+            <span>{{ error }}</span>
+            <button class="alert-close" onclick="document.getElementById('alertError').remove()">✕</button>
+        </div>
+        {% endif %}
+
+        <!-- ===== MAIN FORM ===== -->
+        <form action="/generate" method="POST" enctype="multipart/form-data" id="generatorForm" class="generator-form">
+
+            <div class="form-grid">
+
+                <!-- STEP 1: Job Field -->
+                <div class="form-card" id="step1">
+                    <div class="step-header">
+                        <div class="step-badge">01</div>
+                        <div>
+                            <h2 class="step-title">Target Field</h2>
+                            <p class="step-desc">What industry are you targeting?</p>
+                        </div>
+                    </div>
+
+                    <div class="field-grid" id="fieldGrid">
+                        <label class="field-option" for="field-ai">
+                            <input type="radio" name="field" id="field-ai" value="AI & Software Engineering" checked>
+                            <div class="field-card">
+                                <span class="field-icon">🤖</span>
+                                <span class="field-label">AI / Software</span>
+                            </div>
+                        </label>
+                        <label class="field-option" for="field-creative">
+                            <input type="radio" name="field" id="field-creative" value="Creative Design & Media">
+                            <div class="field-card">
+                                <span class="field-icon">🎨</span>
+                                <span class="field-label">Creative / Design</span>
+                            </div>
+                        </label>
+                        <label class="field-option" for="field-business">
+                            <input type="radio" name="field" id="field-business" value="Corporate Business & Management">
+                            <div class="field-card">
+                                <span class="field-icon">📊</span>
+                                <span class="field-label">Business / Corporate</span>
+                            </div>
+                        </label>
+                        <label class="field-option" for="field-custom">
+                            <input type="radio" name="field" id="field-custom" value="__custom__">
+                            <div class="field-card">
+                                <span class="field-icon">✏️</span>
+                                <span class="field-label">Custom...</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="custom-field-wrapper" id="customFieldWrapper">
+                        <input type="text" id="customFieldInput" class="custom-field-input" placeholder="e.g. Healthcare, Finance, Law..." maxlength="60">
+                    </div>
+                </div>
+
+                <!-- STEP 2: Theme & Tone -->
+                <div class="form-card" id="step2">
+                    <div class="step-header">
+                        <div class="step-badge">02</div>
+                        <div>
+                            <h2 class="step-title">Style & Tone</h2>
+                            <p class="step-desc">Customize how your portfolio looks and sounds.</p>
+                        </div>
+                    </div>
+
+                    <div class="option-row">
+                        <label class="option-label">Portfolio Theme</label>
+                        <div class="theme-selector" id="themeSelector">
+                            <button type="button" class="theme-btn active" data-theme="dark" id="themeDark">
+                                <span class="theme-swatch dark-swatch"></span>Dark Pro
+                            </button>
+                            <button type="button" class="theme-btn" data-theme="light" id="themeLight">
+                                <span class="theme-swatch light-swatch"></span>Light Minimal
+                            </button>
+                            <button type="button" class="theme-btn" data-theme="creative" id="themeCreative">
+                                <span class="theme-swatch creative-swatch"></span>Creative Bold
+                            </button>
+                        </div>
+                        <input type="hidden" name="theme" id="themeInput" value="dark">
+                    </div>
+
+                    <div class="option-row">
+                        <label class="option-label" for="tone">Writing Tone</label>
+                        <select name="tone" id="tone" class="styled-select">
+                            <option value="professional">🎯 Professional — Formal & achievement-driven</option>
+                            <option value="casual">😊 Casual — Friendly & approachable</option>
+                            <option value="academic">🎓 Academic — Precise & research-oriented</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Upload -->
+                <div class="form-card upload-card" id="step3">
+                    <div class="step-header">
+                        <div class="step-badge">03</div>
+                        <div>
+                            <h2 class="step-title">Upload Resume</h2>
+                            <p class="step-desc">Plain text (.txt) file only.</p>
+                        </div>
+                    </div>
+
+                    <div class="dropzone" id="dropzone">
+                        <input type="file" name="resume" id="resumeFile" accept=".txt" required class="file-input">
+                        <div class="dropzone-content" id="dropzoneContent">
+                            <div class="dropzone-icon">📄</div>
+                            <p class="dropzone-title">Drop your resume here</p>
+                            <p class="dropzone-sub">or <span class="dropzone-link">click to browse</span></p>
+                            <p class="dropzone-hint">Supports .txt · Max 1MB</p>
+                        </div>
+                        <div class="dropzone-selected" id="dropzoneSelected" style="display:none;">
+                            <div class="file-icon">✅</div>
+                            <p class="file-name" id="fileName"></p>
+                            <p class="file-size" id="fileSize"></p>
+                            <button type="button" class="file-remove" id="fileRemove">Remove</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /form-grid -->
+
+            <!-- GENERATE BUTTON -->
+            <div class="generate-wrapper">
+                <button type="submit" class="generate-btn" id="generateBtn">
+                    <span class="btn-icon">✦</span>
+                    <span class="btn-text">Generate My Portfolio</span>
+                    <span class="btn-arrow">→</span>
+                </button>
+                <p class="generate-note">Usually takes 10–20 seconds · Powered by Gemini AI</p>
+            </div>
+
+        </form>
+
+        <!-- ===== LOADING OVERLAY ===== -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-card">
+                <div class="loading-spinner">
+                    <div class="spinner-ring"></div>
+                    <span class="spinner-icon">✦</span>
+                </div>
+                <h3 class="loading-title">Crafting your portfolio…</h3>
+                <p class="loading-step" id="loadingStep">Reading your resume</p>
+                <div class="loading-progress">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== FOOTER ===== -->
+        <footer class="site-footer">
+            <p>Built with Flask + Gemini 2.5 · <a href="https://github.com" target="_blank">View on GitHub</a></p>
+        </footer>
+
+    </div><!-- /page-wrapper -->
+
+    <script>
+    // ===== FIELD SELECTION =====
+    const fieldInputs = document.querySelectorAll('input[name="field"]');
+    const customWrapper = document.getElementById('customFieldWrapper');
+    const customInput = document.getElementById('customFieldInput');
+
+    fieldInputs.forEach(input => {
+        input.addEventListener('change', () => {
+            if (input.value === '__custom__') {
+                customWrapper.classList.add('visible');
+                customInput.focus();
+            } else {
+                customWrapper.classList.remove('visible');
+            }
+        });
+    });
+
+    // ===== THEME SELECTION =====
+    const themeBtns = document.querySelectorAll('.theme-btn');
+    const themeInput = document.getElementById('themeInput');
+
+    themeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            themeBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            themeInput.value = btn.dataset.theme;
+        });
+    });
+
+    // ===== DRAG & DROP =====
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('resumeFile');
+    const dropzoneContent = document.getElementById('dropzoneContent');
+    const dropzoneSelected = document.getElementById('dropzoneSelected');
+    const fileNameEl = document.getElementById('fileName');
+    const fileSizeEl = document.getElementById('fileSize');
+    const fileRemove = document.getElementById('fileRemove');
+
+    function formatBytes(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        return (bytes / 1024).toFixed(1) + ' KB';
+    }
+
+    function showFile(file) {
+        fileNameEl.textContent = file.name;
+        fileSizeEl.textContent = formatBytes(file.size);
+        dropzoneContent.style.display = 'none';
+        dropzoneSelected.style.display = 'flex';
+        dropzone.classList.add('has-file');
+    }
+
+    function clearFile() {
+        fileInput.value = '';
+        dropzoneContent.style.display = 'flex';
+        dropzoneSelected.style.display = 'none';
+        dropzone.classList.remove('has-file', 'drag-over');
+    }
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files[0]) showFile(e.target.files[0]);
+    });
+
+    fileRemove.addEventListener('click', clearFile);
+
+    dropzone.addEventListener('click', (e) => {
+        if (!e.target.closest('.file-remove')) fileInput.click();
+    });
+
+    dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('drag-over');
+    });
+
+    dropzone.addEventListener('dragleave', () => {
+        dropzone.classList.remove('drag-over');
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('drag-over');
+        const file = e.dataTransfer.files[0];
+        if (file && file.name.endsWith('.txt')) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+            showFile(file);
+        } else {
+            alert('Please drop a .txt file.');
+        }
+    });
+
+    // ===== FORM SUBMIT + LOADING =====
+    const form = document.getElementById('generatorForm');
+    const overlay = document.getElementById('loadingOverlay');
+    const loadingStep = document.getElementById('loadingStep');
+    const progressBar = document.getElementById('progressBar');
+
+    const steps = [
+        { text: "Reading your resume…", progress: 15 },
+        { text: "Analyzing skills & experience…", progress: 35 },
+        { text: "Optimizing for your target field…", progress: 55 },
+        { text: "Crafting your professional summary…", progress: 72 },
+        { text: "Designing your portfolio layout…", progress: 88 },
+        { text: "Adding final touches…", progress: 96 },
+    ];
+
+    form.addEventListener('submit', (e) => {
+        // Handle custom field
+        const customSelected = document.querySelector('input[name="field"][value="__custom__"]').checked;
+        if (customSelected) {
+            const customVal = customInput.value.trim();
+            if (!customVal) {
+                e.preventDefault();
+                customInput.focus();
+                customInput.style.borderColor = '#ef4444';
+                setTimeout(() => customInput.style.borderColor = '', 1500);
+                return;
+            }
+            // Override the field input value dynamically
+            document.querySelector('input[name="field"][value="__custom__"]').value = customVal;
+        }
+
+        overlay.classList.add('active');
+        let stepIndex = 0;
+
+        function nextStep() {
+            if (stepIndex < steps.length) {
+                const s = steps[stepIndex];
+                loadingStep.textContent = s.text;
+                progressBar.style.width = s.progress + '%';
+                stepIndex++;
+                setTimeout(nextStep, 2800);
+            }
+        }
+        nextStep();
+    });
+    </script>
+</body>
+</html>

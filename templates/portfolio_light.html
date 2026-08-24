@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ portfolio.name }} — Portfolio</title>
+    <meta name="description" content="{{ portfolio.summary[:160] if portfolio.summary else portfolio.name + ' portfolio' }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+    /* ===== LIGHT MINIMAL THEME ===== */
+    :root {
+        --bg: #f8fafc;
+        --surface: #fff;
+        --card: #fff;
+        --border: #e2e8f0;
+        --border-strong: #cbd5e1;
+        --text: #0f172a;
+        --text-2: #475569;
+        --muted: #94a3b8;
+        --accent: #6366f1;
+        --accent2: #0ea5e9;
+        --accent3: #10b981;
+        --danger: #ef4444;
+        --gradient: linear-gradient(135deg, #6366f1, #0ea5e9);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.7;
+        min-height: 100vh;
+    }
+
+    /* ===== SIDEBAR LAYOUT ===== */
+    .layout {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        min-height: 100vh;
+    }
+
+    /* ===== SIDEBAR ===== */
+    aside {
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+        padding: 3rem 2rem;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+    }
+
+    .avatar {
+        width: 72px; height: 72px;
+        border-radius: 50%;
+        background: var(--gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #fff;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 4px 20px rgba(99,102,241,0.3);
+    }
+
+    .sidebar-name {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--text);
+        line-height: 1.2;
+        margin-bottom: 0.4rem;
+    }
+
+    .sidebar-headline {
+        font-size: 0.85rem;
+        color: var(--text-2);
+        margin-bottom: 1.25rem;
+        line-height: 1.5;
+    }
+
+    .field-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 6px;
+        background: rgba(99,102,241,0.08);
+        border: 1px solid rgba(99,102,241,0.15);
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--accent);
+        letter-spacing: 0.04em;
+        margin-bottom: 2rem;
+    }
+
+    .sidebar-section { margin-bottom: 2rem; }
+
+    .sidebar-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 0;
+        font-size: 0.82rem;
+        color: var(--text-2);
+        text-decoration: none;
+        transition: color 0.2s;
+        word-break: break-all;
+    }
+
+    .contact-item:hover { color: var(--accent); }
+
+    .contact-icon { font-size: 1rem; flex-shrink: 0; }
+
+    /* Skills in sidebar */
+    .skill-pill {
+        display: inline-block;
+        padding: 0.3rem 0.75rem;
+        border-radius: 999px;
+        background: var(--bg);
+        border: 1px solid var(--border-strong);
+        color: var(--text-2);
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin: 0.2rem;
+        transition: all 0.2s ease;
+    }
+
+    .skill-pill:hover {
+        background: rgba(99,102,241,0.06);
+        border-color: rgba(99,102,241,0.3);
+        color: var(--accent);
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    main {
+        padding: 3rem;
+        max-width: 700px;
+    }
+
+    section { margin-bottom: 3.5rem; animation: fadeIn 0.4s ease both; }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    section:nth-child(1) { animation-delay: 0.05s; }
+    section:nth-child(2) { animation-delay: 0.1s; }
+    section:nth-child(3) { animation-delay: 0.15s; }
+    section:nth-child(4) { animation-delay: 0.2s; }
+    section:nth-child(5) { animation-delay: 0.25s; }
+
+    .section-tag {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 0.3rem;
+    }
+
+    h2.section-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--border);
+    }
+
+    /* Summary */
+    .summary-text {
+        font-size: 0.97rem;
+        color: var(--text-2);
+        line-height: 1.9;
+    }
+
+    /* Cards */
+    .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    .card:hover {
+        border-color: rgba(99,102,241,0.25);
+        box-shadow: 0 4px 20px rgba(99,102,241,0.08);
+        transform: translateY(-1px);
+    }
+
+    .card-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 0.2rem;
+    }
+
+    .card-sub {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--accent);
+        margin-bottom: 0.2rem;
+    }
+
+    .card-date {
+        font-size: 0.78rem;
+        color: var(--muted);
+        margin-bottom: 0.85rem;
+    }
+
+    .card-body {
+        font-size: 0.875rem;
+        color: var(--text-2);
+        line-height: 1.7;
+    }
+
+    .card ul { list-style: none; padding: 0; }
+    .card ul li {
+        font-size: 0.875rem;
+        color: var(--text-2);
+        padding: 0.25rem 0 0.25rem 1.2rem;
+        position: relative;
+    }
+    .card ul li::before {
+        content: '·';
+        position: absolute;
+        left: 0.2rem;
+        color: var(--accent);
+        font-weight: 700;
+        font-size: 1.2em;
+        line-height: 1;
+        top: 0.35rem;
+    }
+
+    /* Tech tags */
+    .tags-row { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.75rem; }
+    .tech-tag {
+        padding: 0.2rem 0.65rem;
+        border-radius: 4px;
+        background: rgba(14,165,233,0.07);
+        border: 1px solid rgba(14,165,233,0.15);
+        color: #0ea5e9;
+        font-size: 0.72rem;
+        font-weight: 600;
+    }
+
+    /* Project link */
+    .project-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.78rem;
+        color: var(--accent);
+        text-decoration: none;
+        margin-top: 0.75rem;
+        font-weight: 600;
+        transition: opacity 0.2s;
+    }
+    .project-link:hover { opacity: 0.7; }
+
+    /* Timeline for education */
+    .timeline { position: relative; padding-left: 1.5rem; }
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 6px; top: 8px; bottom: 8px;
+        width: 1px;
+        background: var(--border-strong);
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-bottom: 1.5rem;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -1.25rem;
+        top: 6px;
+        width: 10px; height: 10px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    }
+
+    .timeline-degree {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--text);
+    }
+
+    .timeline-inst {
+        font-size: 0.85rem;
+        color: var(--text-2);
+    }
+
+    .timeline-year {
+        font-size: 0.78rem;
+        color: var(--accent);
+        font-weight: 600;
+        margin-top: 0.15rem;
+    }
+
+    /* Certifications */
+    .cert-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.875rem;
+        color: var(--text-2);
+    }
+    .cert-item:last-child { border-bottom: none; }
+    .cert-item::before { content: '🏅'; font-size: 1rem; }
+
+    /* AI Coach */
+    .ai-coach {
+        background: #faf5ff;
+        border: 1px solid #e9d5ff;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .ai-coach-head {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .ai-coach h3 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #7c3aed;
+    }
+
+    .private-badge {
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        padding: 0.15rem 0.5rem;
+        border-radius: 999px;
+        background: rgba(124,58,237,0.08);
+        color: #7c3aed;
+        border: 1px solid rgba(124,58,237,0.15);
+    }
+
+    .ai-coach p { font-size: 0.82rem; color: #6d28d9; margin-bottom: 0.5rem; }
+
+    .suggestion-list { list-style: none; padding: 0; }
+    .suggestion-list li {
+        font-size: 0.85rem;
+        color: #5b21b6;
+        padding: 0.25rem 0 0.25rem 1.2rem;
+        position: relative;
+    }
+    .suggestion-list li::before {
+        content: '→';
+        position: absolute;
+        left: 0;
+        color: #7c3aed;
+        font-weight: 700;
+    }
+
+    /* ===== DOWNLOAD BAR ===== */
+    .download-bar {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        z-index: 50;
+        animation: slideUp 0.5s ease 0.8s both;
+        flex-wrap: wrap;
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+
+    .download-msg {
+        font-size: 0.875rem;
+        color: var(--text-2);
+    }
+
+    .download-actions { display: flex; align-items: center; gap: 0.75rem; }
+
+    .download-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.6rem 1.4rem;
+        background: var(--gradient);
+        border: none;
+        border-radius: 8px;
+        color: #fff;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 12px rgba(99,102,241,0.3);
+    }
+
+    .download-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 20px rgba(99,102,241,0.4);
+    }
+
+    .back-btn {
+        font-size: 0.85rem;
+        color: var(--text-2);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s;
+    }
+
+    .back-btn:hover { color: var(--accent); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .layout { grid-template-columns: 1fr; }
+        aside { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+        main { padding: 2rem 1.25rem 6rem; max-width: none; }
+        .download-bar { justify-content: center; text-align: center; }
+    }
+
+    @media print {
+        .download-bar { display: none; }
+    }
+    </style>
+</head>
+<body>
+
+<div class="layout">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside>
+        <div class="avatar">{{ portfolio.name[0] if portfolio.name else '?' }}</div>
+        <p class="sidebar-name">{{ portfolio.name }}</p>
+        {% if portfolio.headline %}
+        <p class="sidebar-headline">{{ portfolio.headline }}</p>
+        {% endif %}
+        {% if portfolio.target_field %}
+        <div class="field-tag">🎯 {{ portfolio.target_field }}</div>
+        {% endif %}
+
+        <!-- Contact -->
+        <div class="sidebar-section">
+            <p class="sidebar-label">Contact</p>
+            {% if portfolio.contact.email %}
+            <a href="mailto:{{ portfolio.contact.email }}" class="contact-item">
+                <span class="contact-icon">📧</span>{{ portfolio.contact.email }}
+            </a>
+            {% endif %}
+            {% if portfolio.contact.phone %}
+            <a href="tel:{{ portfolio.contact.phone }}" class="contact-item">
+                <span class="contact-icon">📞</span>{{ portfolio.contact.phone }}
+            </a>
+            {% endif %}
+            {% if portfolio.contact.linkedin %}
+            <a href="{{ portfolio.contact.linkedin }}" class="contact-item" target="_blank">
+                <span class="contact-icon">💼</span>LinkedIn
+            </a>
+            {% endif %}
+            {% if portfolio.contact.github %}
+            <a href="{{ portfolio.contact.github }}" class="contact-item" target="_blank">
+                <span class="contact-icon">🐙</span>GitHub
+            </a>
+            {% endif %}
+            {% if portfolio.contact.website %}
+            <a href="{{ portfolio.contact.website }}" class="contact-item" target="_blank">
+                <span class="contact-icon">🌐</span>Website
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- Skills -->
+        {% if portfolio.skills and portfolio.skills|length > 0 %}
+        <div class="sidebar-section">
+            <p class="sidebar-label">Skills</p>
+            {% for skill in portfolio.skills %}
+            <span class="skill-pill">{{ skill }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Certifications in sidebar -->
+        {% if portfolio.certifications and portfolio.certifications|length > 0 %}
+        <div class="sidebar-section">
+            <p class="sidebar-label">Certifications</p>
+            {% for cert in portfolio.certifications %}
+            <div class="cert-item">{{ cert }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <main>
+
+        <!-- AI Coach -->
+        {% if portfolio.suggestions and portfolio.suggestions|length > 0 %}
+        <div class="ai-coach">
+            <div class="ai-coach-head">
+                <h3>🤖 AI Career Coach</h3>
+                <span class="private-badge">Private</span>
+            </div>
+            <p>Skills to build for your target field:</p>
+            <ul class="suggestion-list">
+                {% for s in portfolio.suggestions %}<li>{{ s }}</li>{% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Summary -->
+        {% if portfolio.summary %}
+        <section>
+            <p class="section-tag">About</p>
+            <h2 class="section-title">Professional Summary</h2>
+            <p class="summary-text">{{ portfolio.summary }}</p>
+        </section>
+        {% endif %}
+
+        <!-- Projects -->
+        {% if portfolio.projects and portfolio.projects|length > 0 %}
+        <section>
+            <p class="section-tag">Work</p>
+            <h2 class="section-title">Projects</h2>
+            {% for project in portfolio.projects %}
+            <div class="card">
+                <p class="card-title">{{ project.title }}</p>
+                <p class="card-body">{{ project.description }}</p>
+                {% if project.technologies %}
+                <div class="tags-row">
+                    {% for t in project.technologies %}<span class="tech-tag">{{ t }}</span>{% endfor %}
+                </div>
+                {% endif %}
+                {% if project.link %}
+                <a href="{{ project.link }}" class="project-link" target="_blank">↗ View Project</a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        <!-- Experience -->
+        {% if portfolio.experience and portfolio.experience|length > 0 %}
+        <section>
+            <p class="section-tag">History</p>
+            <h2 class="section-title">Experience</h2>
+            {% for job in portfolio.experience %}
+            <div class="card">
+                <p class="card-title">{{ job.role }}</p>
+                <p class="card-sub">{{ job.company }}</p>
+                {% if job.duration %}<p class="card-date">{{ job.duration }}</p>{% endif %}
+                {% if job.highlights %}
+                <ul>{% for h in job.highlights %}<li>{{ h }}</li>{% endfor %}</ul>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        <!-- Education -->
+        {% if portfolio.education and portfolio.education|length > 0 %}
+        <section>
+            <p class="section-tag">Academic</p>
+            <h2 class="section-title">Education</h2>
+            <div class="timeline">
+                {% for edu in portfolio.education %}
+                <div class="timeline-item">
+                    <p class="timeline-degree">{{ edu.degree }}</p>
+                    <p class="timeline-inst">{{ edu.institution }}</p>
+                    {% if edu.year %}<p class="timeline-year">{{ edu.year }}</p>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+    </main>
+</div>
+
+<!-- DOWNLOAD BAR -->
+<div class="download-bar">
+    <p class="download-msg">✅ Portfolio generated successfully!</p>
+    <div class="download-actions">
+        <a href="/" class="back-btn">← Edit</a>
+        <form action="/download" method="POST" style="display:inline;">
+            <input type="hidden" name="portfolio_json" value="{{ portfolio | tojson | e }}">
+            <input type="hidden" name="theme" value="light">
+            <input type="hidden" name="tone" value="{{ tone }}">
+            <button type="submit" class="download-btn">⬇ Download HTML</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

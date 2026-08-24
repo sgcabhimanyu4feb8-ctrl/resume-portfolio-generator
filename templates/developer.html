@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ portfolio.name }} - Portfolio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<body>
+    <header>
+        <div class="container hero">
+            <h1>{{ portfolio.name }}</h1>
+            {% if portfolio.headline %}<h2>{{ portfolio.headline }}</h2>{% endif %}
+            <div class="links">
+                {% if portfolio.contact.email %}<a href="mailto:{{ portfolio.contact.email }}">Email</a>{% endif %}
+                {% if portfolio.contact.github %}<a href="{{ portfolio.contact.github }}">GitHub</a>{% endif %}
+                {% if portfolio.contact.linkedin %}<a href="{{ portfolio.contact.linkedin }}">LinkedIn</a>{% endif %}
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Private AI Coach Section -->
+        {% if portfolio.suggestions and portfolio.suggestions|length > 0 %}
+        <div class="ai-coach">
+            <h3>🤖 AI Career Coach Recommendations (Private)</h3>
+            <p>To improve your chances for your target role, consider learning:</p>
+            <ul>
+                {% for suggestion in portfolio.suggestions %}<li>{{ suggestion }}</li>{% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if portfolio.summary %}
+        <section>
+            <h3>About Me</h3>
+            <p>{{ portfolio.summary }}</p>
+        </section>
+        {% endif %}
+
+        <div class="grid-2">
+            {% if portfolio.skills and portfolio.skills|length > 0 %}
+            <section>
+                <h3>Tech Stack & Skills</h3>
+                <div class="tags">
+                    {% for skill in portfolio.skills %}<span>{{ skill }}</span>{% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
+            {% if portfolio.languages and portfolio.languages|length > 0 %}
+            <section>
+                <h3>Languages</h3>
+                <div class="tags">
+                    {% for lang in portfolio.languages %}<span>{{ lang }}</span>{% endfor %}
+                </div>
+            </section>
+            {% endif %}
+        </div>
+
+        {% if portfolio.projects and portfolio.projects|length > 0 %}
+        <section>
+            <h3>Projects</h3>
+            <div class="grid-2">
+                {% for project in portfolio.projects %}
+                <div class="card">
+                    <h4>{{ project.title }}</h4>
+                    <p>{{ project.description }}</p>
+                    {% if project.technologies %}
+                    <small><strong>Built with:</strong> {{ project.technologies|join(', ') }}</small>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {% if portfolio.experience and portfolio.experience|length > 0 %}
+        <section>
+            <h3>Experience</h3>
+            {% for job in portfolio.experience %}
+            <div class="card">
+                <h4>{{ job.role }} at {{ job.company }}</h4>
+                <p class="muted">{{ job.duration }}</p>
+                <ul>
+                    {% for highlight in job.highlights %}<li>{{ highlight }}</li>{% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        {% if portfolio.education and portfolio.education|length > 0 %}
+        <section>
+            <h3>Education & Certifications</h3>
+            {% for edu in portfolio.education %}
+            <p><strong>{{ edu.degree }}</strong> — {{ edu.institution }} ({{ edu.year }})</p>
+            {% endfor %}
+            
+            {% if portfolio.certifications %}
+            <ul>
+                {% for cert in portfolio.certifications %}<li>{{ cert }}</li>{% endfor %}
+            </ul>
+            {% endif %}
+        </section>
+        {% endif %}
+    </main>
+</body>
+</html>

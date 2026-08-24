@@ -1,0 +1,38 @@
+Aryan Dixit
+Agra, Uttar Pradesh
+Email: aryan.test@example.com
+GitHub: github.com/aryandixit-test
+
+PROFESSIONAL SUMMARY
+Highly motivated student pursuing a Bachelor of Vocational Education in Artificial Intelligence and Robotics. Experienced in software development, hardware programming, and building dynamic web projects. Passionate about utilizing AI to automate tasks and solve complex technical challenges.
+
+EDUCATION
+Dayalbagh Educational Institute, Agra
+Bachelor of Vocational Education in Artificial Intelligence and Robotics
+Expected Graduation: 2027
+
+All Saints School
+Class 12 (PCM Stream)
+
+TECHNICAL SKILLS
+Languages: Python, SQL, Java, HTML, CSS, JavaScript
+Hardware & Embedded: Arduino Uno, Raspberry Pi
+Tools & Platforms: IntelliJ IDEA, GitHub Pages, Cloud Gaming Platforms (NVIDIA GeForce NOW)
+Concepts: Generative AI, File Parsing, Web Development, Database Management
+
+PROJECTS
+AI-Based File and Image Organizer
+- Developed an automated AI-driven categorization system to organize digital documents and images.
+- Implemented file parsing scripts and intelligent sorting logic to streamline digital asset management.
+
+Dynamic Developer Portfolio
+- Built and deployed a responsive developer portfolio website.
+- Utilized HTML, CSS, and JavaScript for the frontend and successfully hosted the live site using GitHub Pages.
+
+CERTIFICATIONS
+- Microsoft Azure AI Fundamentals (AI-900) - Earned via Pearson VUE
+- Skill Development Workshop Certificate - Skill Orbit India
+
+ADDITIONAL EXPERIENCE
+- Hands-on experience troubleshooting and optimizing hardware performance, including GPU configuration for NVIDIA GeForce RTX 3050 systems.
+- Preparing for competitive recruitment examinations (SSC CHSL and SSC CGL) to strengthen analytical and quantitative problem-solving skills.
